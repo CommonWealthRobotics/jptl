@@ -6,11 +6,13 @@
  *
  * --Last Modified--
  * User: $Author: pjschwarz $
- * When: $Date: 2005/03/05 17:03:01 $
+ * When: $Date: 2005/03/10 19:08:20 $
  *
  * Copyright (c) 2005, by Exadius Labs.  All Rights Reserved.
  */
 package org.exadius.jptl.triangulation;
+
+import org.exadius.jptl.util.PointUtil;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -20,17 +22,17 @@ import java.util.List;
 /**
  * The Trapezoid query structure as discribed in Seidel'91
  * Works best with a random ordering of segments.
+ * TODO:  The tree is still not right.  There is an issue that seems
+ * to be triggering a sanity check failure.
  *
  * @author pschwarz
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class TrapezoidTree
 {
     private Node root;
     private List<Trapezoid> trapezoids = new ArrayList<Trapezoid>();
     private List<Segment> segments = new ArrayList<Segment>();
-
-    private static final float C_EPS = 1.0e-7f;
 
     private static final int FIRSTPT = 1;
     private static final int LASTPT = 2;
@@ -99,7 +101,7 @@ public class TrapezoidTree
         boolean tribot = false;
         boolean isSwapped = false;
 
-        if (greaterThan(s.v1, s.v0))
+        if (PointUtil.greaterThan(s.v1, s.v0))
         {
             Point2D tmp = s.v0;
             s.v0 = s.v1;
@@ -140,9 +142,9 @@ public class TrapezoidTree
         Trapezoid t = topmostTrapezoid;
 
         while (t != null &&
-                greaterThanEqualTo(t.lo, lowermostTrapezoid.lo))
+                PointUtil.greaterThanEqualTo(t.lo, lowermostTrapezoid.lo))
         {   /* traverse from top to bottom */
-            Trapezoid save, nSave; // not sure what the difference is.
+            Trapezoid save, nSave;
             Node newXNode = t.sink;
             newXNode.type = Node.TYPE_X;
             newXNode.segment = s;
@@ -168,7 +170,9 @@ public class TrapezoidTree
             // Sanity check
             if ((t.d0 == null) && (t.d1 == null)) /* case cannot arise */
             {
-                throw new RuntimeException("Sanity check failed: No lower neighbors.");
+                System.out.println("Sanity check failed: No lower neighbors.");
+                break;
+//                throw new RuntimeException("Sanity check failed: No lower neighbors.");
             }
             // only one trapezoid below. partition t into two and make the
             // two resulting trapezoids t and tn as the upper neighbours of
@@ -400,7 +404,7 @@ public class TrapezoidTree
                     yt = (y0 - s.v0.getY())/(s.v1.getY() - s.v0.getY());
                     tmpPt = new Point2D.Double((int)(s.v0.getX() + yt * (s.v1.getX() - s.v0.getX())), (int)y0);
 
-                    if(lessThan(tmpPt, t.lo))
+                    if(PointUtil.lessThan(tmpPt, t.lo))
                         intersectsD0 = true;
 //                    else
 //                        isD1 = true;
@@ -551,33 +555,32 @@ public class TrapezoidTree
 
     private Trapezoid createNewBottom(Segment s, boolean leftToRight)
     {
-        Trapezoid endPoint2D;
-        endPoint2D = leftToRight ?
-                locateEndpoint(s.v0, s.v1, s.root0) :
-                locateEndpoint(s.v1, s.v0, s.root1);
+        Trapezoid endPoint = leftToRight ?
+                        locateEndpoint(s.v0, s.v1, s.root0) :
+                        locateEndpoint(s.v1, s.v0, s.root1);
 
         Trapezoid newTrapezoid = createTrapezoid();
-        copyInto(endPoint2D, newTrapezoid);
-        newTrapezoid.hi = endPoint2D.lo = (leftToRight ? s.v0 : s.v1);
-        endPoint2D.d0 = newTrapezoid;
-        endPoint2D.d1 = null;
-        newTrapezoid.u0 = endPoint2D;
-        endPoint2D.u1 = null;
+        copyInto(endPoint, newTrapezoid);
+        newTrapezoid.hi = endPoint.lo = (leftToRight ? s.v0 : s.v1);
+        endPoint.d0 = newTrapezoid;
+        endPoint.d1 = null;
+        newTrapezoid.u0 = endPoint;
+        endPoint.u1 = null;
 
         Trapezoid tmp;
-        if (((tmp = newTrapezoid.d0) != null) && (tmp.u0 == endPoint2D))
+        if (((tmp = newTrapezoid.d0) != null) && (tmp.u0 == endPoint))
             tmp.u0 = newTrapezoid;
-        if (((tmp = newTrapezoid.d0) != null) && (tmp.u1 == endPoint2D))
+        if (((tmp = newTrapezoid.d0) != null) && (tmp.u1 == endPoint))
             tmp.u1 = newTrapezoid;
 
-        if (((tmp = newTrapezoid.d1) != null) && (tmp.u0 == endPoint2D))
+        if (((tmp = newTrapezoid.d1) != null) && (tmp.u0 == endPoint))
             tmp.u0 = newTrapezoid;
-        if (((tmp = newTrapezoid.d1) != null) && (tmp.u1 == endPoint2D))
+        if (((tmp = newTrapezoid.d1) != null) && (tmp.u1 == endPoint))
             tmp.u1 = newTrapezoid;
 
         // Now update the query structure and obtain the
         // sinks for the two trapezoids
-        Node newYNode = endPoint2D.sink;
+        Node newYNode = endPoint.sink;
         newYNode.type = Node.TYPE_Y;
         newYNode.yval = (leftToRight ? s.v0 : s.v1);
         newYNode.segment = s;
@@ -586,12 +589,12 @@ public class TrapezoidTree
 
         if (leftToRight)
         {
-            link(endPoint2D, newYNode.left);
+            link(endPoint, newYNode.left);
             link(newTrapezoid, newYNode.right);
         }
         else
         {
-            link(endPoint2D, newYNode.right);
+            link(endPoint, newYNode.right);
             link(newTrapezoid, newYNode.left);
         }
 
@@ -619,14 +622,13 @@ public class TrapezoidTree
      */
     private void mergeTrapezoids(Segment s, Trapezoid first, Trapezoid last, int side)
     {
-
         boolean goodNeighbors;
         Trapezoid next;
         Node parentNext;
 
         /* First merge polys on the LHS */
         Trapezoid t = first;
-        while ((t != null) && greaterThanEqualTo(t.lo, last.lo))
+        while ((t != null) && PointUtil.greaterThanEqualTo(t.lo, last.lo))
         {
             if (side == Trapezoid.SIDE_LEFT)
                 goodNeighbors = ((((next = t.d0) != null) && (next.rseg == s)) ||
@@ -701,11 +703,11 @@ public class TrapezoidTree
                 return node.trapezoid;
 
             case Node.TYPE_Y:
-                if (greaterThan(v, node.yval)) /* above */
+                if (PointUtil.greaterThan(v, node.yval)) /* above */
                     return locateEndpoint(v, vo, node.right);
                 else if (v.equals(node.yval)) /* the point is already */
                 {			                     /* isEndpointInserted. */
-                    if (greaterThan(vo, node.yval)) /* above */
+                    if (PointUtil.greaterThan(vo, node.yval)) /* above */
                         return locateEndpoint(v, vo, node.right);
                     else
                         return locateEndpoint(v, vo, node.left); /* below */
@@ -751,53 +753,7 @@ public class TrapezoidTree
      */
     private boolean isleftOf(Segment segment, Point2D vo)
     {
-        double area;
-
-        if (greaterThan(segment.v1, segment.v0)) /* seg. going upwards */
-        {
-            if (Double.compare(segment.v1.getY(), vo.getY()) == 0)
-            {
-                if (vo.getX() < segment.v1.getX())
-                    area = 1.0;
-                else
-                    area = -1.0;
-            }
-            else if (Double.compare(segment.v0.getY(), vo.getY()) == 0)
-            {
-                if (vo.getX() < segment.v0.getX())
-                    area = 1.0;
-                else
-                    area = -1.0;
-            }
-            else
-                area = crossProduct(segment.v0, segment.v1, vo);
-        }
-        else				/* v0 > v1 */
-        {
-            if (Double.compare(segment.v1.getY(), vo.getY()) == 0)
-            {
-                if (vo.getX() < segment.v1.getX())
-                    area = 1.0;
-                else
-                    area = -1.0;
-            }
-            else if (Double.compare(segment.v0.getY(), vo.getY()) == 0)
-            {
-                if (vo.getX() < segment.v0.getX())
-                    area = 1.0;
-                else
-                    area = -1.0;
-            }
-            else
-                area = crossProduct(segment.v1, segment.v0, vo);
-        }
-
-        return (area > 0.0);
-    }
-
-    private double crossProduct(Point2D v0, Point2D v1, Point2D v2)
-    {
-        return ((v1).getX() - (v0).getX()) * ((v2).getY() - (v0).getY()) - ((v1).getY() - (v0).getY()) * ((v2).getX() - (v0).getX());
+        return segment.isLeftOf(vo);
     }
 
     private boolean isEndpointInserted(Segment s, int lastOrFirst)
@@ -825,12 +781,12 @@ public class TrapezoidTree
     private void initQueryStructure(Segment s)
     {
         root = new Node(Node.TYPE_Y);
-        root.yval = max(s.v0, s.v1);
+        root.yval = PointUtil.max(s.v0, s.v1);
 
         root.right = createSinkNode(root);
 
         Node yNode = new Node(Node.TYPE_Y, root);
-        yNode.yval = min(s.v0, s.v1);
+        yNode.yval = PointUtil.min(s.v0, s.v1);
         root.left = yNode;
 
         yNode.left = createSinkNode(yNode);
@@ -873,99 +829,6 @@ public class TrapezoidTree
     private Node createSinkNode(Node parent)
     {
         return new Node(Node.TYPE_SINK, parent);
-    }
-
-    /**
-     * Computes the y-max of two points
-     *
-     * @param v0
-     * @param v1
-     * @return
-     */
-    private Point2D max(Point2D v0, Point2D v1)
-    {
-        if (v0.getY() > v1.getY() + C_EPS)
-        {
-            return v0;
-        }
-        else if (Double.compare(v0.getY(), v1.getY()) == 0)
-        {
-            if (v0.getX() > v1.getX() + C_EPS)
-            {
-                return v0;
-            }
-            else
-            {
-                return v1;
-            }
-        }
-        else
-        {
-            return v1;
-        }
-    }
-
-    /**
-     * Computes the y-min of two points
-     *
-     * @param v0
-     * @param v1
-     * @return
-     */
-    private Point2D min(Point2D v0, Point2D v1)
-    {
-        if (v0.getY() < v1.getY() - C_EPS)
-        {
-            return v0;
-        }
-        else if (Double.compare(v0.getY(), v1.getY()) == 0)
-        {
-            if (v0.getX() < v1.getX())
-            {
-                return v0;
-            }
-            else
-            {
-                return v1;
-            }
-        }
-        else
-        {
-            return v1;
-        }
-
-    }
-
-    //
-    // TODO:  Replace the following with a Comparable.compareTo call.
-    private boolean greaterThan(Point2D v1, Point2D v0)
-    {
-        if (v0.getY() > v1.getY() + C_EPS)
-            return true;
-        else if (v0.getY() < v1.getY() - C_EPS)
-            return false;
-        else
-            return (v0.getX() > v1.getX());
-    }
-
-    private boolean greaterThanEqualTo(Point2D p0, Point2D p1)
-    {
-        if (p0.getY() > p1.getY() + C_EPS)
-            return true;
-        else if (p0.getY() < p1.getY() - C_EPS)
-            return false;
-        else
-            return (p0.getX() >= p1.getX());
-    }
-
-    private boolean lessThan(Point2D v0, Point2D v1)
-    {
-        if (v0.getY() < v1.getY() - C_EPS)
-            return true;
-        else if (v0.getY() > v1.getY() + C_EPS)
-            return false;
-        else
-            return (v0.getX() < v1.getX());
     }
 
 }

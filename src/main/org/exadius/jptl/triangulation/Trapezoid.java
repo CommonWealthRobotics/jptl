@@ -1,8 +1,10 @@
-// $Id: Trapezoid.java,v 1.3 2005/03/05 17:03:01 pjschwarz Exp $
+// $Id: Trapezoid.java,v 1.4 2005/03/10 19:08:20 pjschwarz Exp $
 //
 // Copyright (c) 2005, by Exadius Labs.  All Rights Reserved.
 // Licensed under the the BSD License.
 package org.exadius.jptl.triangulation;
+
+import org.exadius.jptl.util.PointUtil;
 
 import java.awt.geom.Point2D;
 
@@ -11,7 +13,7 @@ import java.awt.geom.Point2D;
  * Todo: rename the variables to something more meaningful
  *
  * @author pschwarz
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @since Feb 23, 2005 10:29:19 AM
  */
 public class Trapezoid
@@ -30,6 +32,28 @@ public class Trapezoid
     Trapezoid usave;
     int uside;		// Side on which the trapezoid is intersected.
     int state = STATE_VALID;
+
+    public boolean insidePolygon()
+    {
+        if (this.state == Trapezoid.STATE_INVALID)
+        {
+            return false;
+        }
+
+        if (this.rseg == null || this.lseg == null)
+        {
+            return false;
+        }
+
+        if (((this.u0 == null) && (this.u1 == null)) ||
+                ((this.d0 == null) && (this.d1 == null))) /* triangle */
+        {
+            return (PointUtil.greaterThan(this.rseg.v1, this.rseg.v0));
+        }
+
+        return false;
+
+    }
 
     public String toString()
     {

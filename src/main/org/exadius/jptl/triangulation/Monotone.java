@@ -1,4 +1,4 @@
-// $Id: Monotone.java,v 1.2 2005/03/05 17:03:01 pjschwarz Exp $
+// $Id: Monotone.java,v 1.3 2005/03/10 19:08:19 pjschwarz Exp $
 //
 // Copyright (c) 2005, by Exadius Labs.  All Rights Reserved.
 // Licensed under the the BSD License.
@@ -12,8 +12,8 @@ package org.exadius.jptl.triangulation;
  */
 public class Monotone
 {
-    int vnum;
-    int next;			/* Circularly linked list  */
-    int prev;			/* describing the monotone */
+    Segment vnum;
+    Segment next;			/* Circularly linked list  */
+    Segment prev;			/* describing the monotone */
     int marked;			/* polygon */
 }
