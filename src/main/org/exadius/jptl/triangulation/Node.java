@@ -1,4 +1,4 @@
-// $Id: Node.java,v 1.1 2005/02/26 17:19:44 pjschwarz Exp $
+// $Id: Node.java,v 1.2 2005/02/26 22:04:34 pjschwarz Exp $
 //
 // Copyright (c) 2005, by Exadius Labs.  All Rights Reserved.
 // Licensed under the the BSD License.
@@ -32,7 +32,7 @@ class Node
 
     int type;			/* Y-node or S-node */
     Point yval;
-    Trapazoid trapazoid;
+    Trapezoid trapezoid;
     Node parent;			/* doubly linked DAG */
     Node left, right;		/* children */
     Segment segment;

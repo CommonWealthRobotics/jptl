@@ -1,4 +1,4 @@
-// $Id: Triangulator.java,v 1.1 2005/02/26 17:19:44 pjschwarz Exp $
+// $Id: Triangulator.java,v 1.2 2005/02/26 22:04:34 pjschwarz Exp $
 //
 // Copyright (c) 2005, by Exadius Labs.  All Rights Reserved.
 // Licensed under the the BSD License.
@@ -10,7 +10,18 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * TODO: Comment
+ * Given a set of vertices, the triangulator will decompose them into a
+ * set of triangles.  It uses the following as a reference:
+ * <pre>
+ * article{Sei91,
+ * AUTHOR = "R. Seidel",
+ * TITLE = "A simple and Fast Randomized Algorithm for Computing Trapezoidal Decompositions and for Triangulating Polygons",
+ * JOURNAL = "Computational Geometry Theory &amp; Applications",
+ * PAGES = "51-64",
+ * NUMBER = 1,
+ * YEAR = 1991,
+ * VOLUME = 1 }
+ * </pre>
  *
  * @author pschwarz
  * @since Feb 23, 2005 10:24:14 AM
@@ -23,16 +34,6 @@ public class Triangulator
 
     /**
      * Decomposes the polygon given into a series of triangles.
-     * <pre>
-     * article{Sei91,
-     * AUTHOR = "R. Seidel",
-     * TITLE = "A simple and Fast Randomized Algorithm for Computing Trapezoidal Decompositions and for Triangulating Polygons",
-     * JOURNAL = "Computational Geometry Theory &amp; Applications",
-     * PAGES = "51-64",
-     * NUMBER = 1,
-     * YEAR = 1991,
-     * VOLUME = 1 }
-     * </pre>
      *
      * @param polygonVertices
      * @return
@@ -65,20 +66,20 @@ public class Triangulator
 
             if(i == last)
             {
-                segements.get(i).next = first;
-                segements.get(i).prev = i - 1;
+                segements.get(i).next = segements.get(first);
+                segements.get(i).prev = segements.get(i - 1);
                 segements.get(i - 1).v1 = segements.get(i).v0;
             }
             else if(i == first)
             {
-                segements.get(i).next = i + 1;
-                segements.get(i).prev = last;
+                segements.get(i).next = segements.get(i + 1);
+                segements.get(i).prev = segements.get(last);
                 segements.get(last).v1 = segements.get(i).v0;
             }
             else
             {
-                segements.get(i).prev = i - 1;
-                segements.get(i).next = i + 1;
+                segements.get(i).prev = segements.get(i - 1);
+                segements.get(i).next = segements.get(i + 1);
                 segements.get(i - 1).v1 = segements.get(i).v0;
             }
 
