@@ -6,22 +6,22 @@
  *
  * --Last Modified--
  * User: $Author: pjschwarz $
- * When: $Date: 2005/02/27 17:50:31 $
+ * When: $Date: 2005/03/05 17:03:01 $
  *
  * Copyright (c) 2005, by Exadius Labs.  All Rights Reserved.
  * Licensed under the the BSD License.
  */
 package org.exadius.jptl.triangulation;
 
-import java.util.List;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.awt.*;
+import java.util.List;
 
 /**
  * Given a list of points, it builds a list of Segments.
  *
  * @author pschwarz
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SegmentBuilder
 {
@@ -32,7 +32,7 @@ public class SegmentBuilder
      * @param polygonVertices
      * @return
      */
-    public static List<Segment> buildSegmentList(List<Point> polygonVertices)
+    public static List<Segment> buildSegmentList(List<Point2D> polygonVertices)
     {
         ArrayList<Segment> segments = initSegements(polygonVertices);
 
@@ -64,14 +64,12 @@ public class SegmentBuilder
                 segments.get(i).next = segments.get(i + 1);
                 segments.get(i - 1).v1 = segments.get(i).v0;
             }
-
-            segments.get(i).isInserted = true;
         }
 
         return segments;
     }
 
-    private static ArrayList<Segment> initSegements(List<Point> polygonVertices)
+    private static ArrayList<Segment> initSegements(List<Point2D> polygonVertices)
     {
         ArrayList<Segment> segments = new ArrayList<Segment>(polygonVertices.size());
         for(int j = 0; j < polygonVertices.size(); j++)

@@ -1,4 +1,4 @@
-// $Id: Triangulator.java,v 1.3 2005/02/27 17:50:32 pjschwarz Exp $
+// $Id: Triangulator.java,v 1.4 2005/03/05 17:03:02 pjschwarz Exp $
 //
 // Copyright (c) 2005, by Exadius Labs.  All Rights Reserved.
 // Licensed under the the BSD License.
@@ -6,7 +6,7 @@ package org.exadius.jptl.triangulation;
 
 import org.exadius.jptl.util.MathUtil;
 
-import java.awt.*;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +39,7 @@ public class Triangulator
      * @param polygonVertices
      * @return
      */
-    public List triangulate(List<Point> polygonVertices)
+    public List triangulate(List<Point2D> polygonVertices)
     {
         int nmonpoly;
         int n;

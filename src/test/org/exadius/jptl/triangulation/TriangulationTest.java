@@ -1,4 +1,4 @@
-// $Id: TriangulationTest.java,v 1.1 2005/02/26 17:19:43 pjschwarz Exp $
+// $Id: TriangulationTest.java,v 1.2 2005/03/05 17:03:03 pjschwarz Exp $
 //
 // Copyright (c) 2005, by Exadius Labs.  All Rights Reserved.
 // Licensed under the the BSD License.
@@ -6,12 +6,12 @@ package org.exadius.jptl.triangulation;
 
 import junit.framework.TestCase;
 
-import java.util.List;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.awt.*;
+import java.util.List;
 
 /**
- * TODO: Comment
+ * Tests for the Triangulator.
  *
  * @author pschwarz
  * @since Feb 23, 2005 10:19:41 AM
@@ -21,11 +21,11 @@ public class TriangulationTest extends TestCase
     public void testTriangulation() throws Exception
     {
         Triangulator triangulator = new Triangulator();
-        List<Point> polygonVertices = new ArrayList<Point>();
-        polygonVertices.add(new Point(1, 1));
-        polygonVertices.add(new Point(2, 3));
-        polygonVertices.add(new Point(4, 4));
-        polygonVertices.add(new Point(3, 2));
+        List<Point2D> polygonVertices = new ArrayList<Point2D>();
+        polygonVertices.add(new Point2D.Float(1, 1));
+        polygonVertices.add(new Point2D.Float(2, 3));
+        polygonVertices.add(new Point2D.Float(4, 4));
+        polygonVertices.add(new Point2D.Float(3, 2));
 
         List triangles = triangulator.triangulate(polygonVertices);
 

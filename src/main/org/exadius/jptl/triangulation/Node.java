@@ -1,10 +1,10 @@
-// $Id: Node.java,v 1.2 2005/02/26 22:04:34 pjschwarz Exp $
+// $Id: Node.java,v 1.3 2005/03/05 17:03:01 pjschwarz Exp $
 //
 // Copyright (c) 2005, by Exadius Labs.  All Rights Reserved.
 // Licensed under the the BSD License.
 package org.exadius.jptl.triangulation;
 
-import java.awt.*;
+import java.awt.geom.Point2D;
 
 /**
  * A query structure node.
@@ -31,7 +31,7 @@ class Node
 
 
     int type;			/* Y-node or S-node */
-    Point yval;
+    Point2D yval;
     Trapezoid trapezoid;
     Node parent;			/* doubly linked DAG */
     Node left, right;		/* children */

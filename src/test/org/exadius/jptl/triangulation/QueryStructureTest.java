@@ -6,7 +6,7 @@
  *
  * --Last Modified--
  * User: $Author: pjschwarz $
- * When: $Date: 2005/02/27 17:50:32 $
+ * When: $Date: 2005/03/05 17:03:03 $
  *
  * Copyright (c) 2005, by Exadius Labs.  All Rights Reserved.
  * Licensed under the the BSD License.
@@ -15,19 +15,15 @@ package org.exadius.jptl.triangulation;
 
 import junit.framework.TestCase;
 
-import java.awt.Point;
-import java.util.Iterator;
+import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Collections;
-
-import org.apache.commons.collections.CollectionUtils;
 
 /**
  * Tests for the query structure.
  *
  * @author pschwarz
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class QueryStructureTest extends TestCase
 {
@@ -36,12 +32,12 @@ public class QueryStructureTest extends TestCase
         super(test);
     }
 
-    public void testInitQueryStructure()
+    public void testBuildTree()
     {
-        List<Point> list=  Arrays.asList(new Point[]{new Point(1, 2), new Point(2, 2), new Point(4, 4), new Point(3, 4) });
+        List<Point2D> list=  Arrays.asList(new Point2D[]{ new Point2D.Float(3, 4),new Point2D.Float(1, 2), new Point2D.Float(2, 2), new Point2D.Float(4, 4) });
 
         List<Segment> segments = SegmentBuilder.buildSegmentList(list);
-        Collections.shuffle(segments);
+//        Collections.shuffle(segments);
         TrapezoidTree q = new TrapezoidTree();
         q.add(segments.get(0));
 
@@ -52,7 +48,7 @@ public class QueryStructureTest extends TestCase
         {
             Segment segment = (Segment) segments.get(i);
             q.add(segment);
-            assertEquals(i, q.size());
+            assertEquals(i + 1, q.size());
         }
 
 

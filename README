@@ -1,0 +1,26 @@
+Java Polygon Triangulation Library.
+
+Usage:
+
+See the JavaDoc.
+
+Background:
+
+In doing some research that required the breakup of polygons in into convex
+polygons, I could not find a library for performing this operation written
+in Java.
+
+It is based off of the following paper:
+
+@article{Sei91,
+AUTHOR = "R. Seidel",
+TITLE = "A simple and Fast Randomized Algorithm for Computing Trapezoidal
+         Decompositions and for Triangulating Polygons",
+JOURNAL = "Computational Geometry Theory &amp; Applications",
+PAGES = "51-64",
+NUMBER = 1,
+YEAR = 1991,
+VOLUME = 1 }
+
+and is (at least for reference) a psuedo-port of code written by  Narkhede A.
+and Manocha D. at UNC-CH.
