@@ -1,0 +1,11 @@
+TODO list (some from the code, some from the top of my head).
+
+Need to:
+- Finish the code port.
+- Verify the trapazoid tree structure.  There are still some issues with the bottom of the tree.
+
+
+Like to:
+- Refactor.  Refactor.  Refactor.
+- Add some logging (commons logging?).
+- In PointUtil,  Replace greaterThan, etc with a Comparable call.

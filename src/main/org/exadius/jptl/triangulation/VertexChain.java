@@ -1,4 +1,4 @@
-// $Id: VertexChain.java,v 1.3 2005/03/10 19:08:20 pjschwarz Exp $
+// $Id: VertexChain.java,v 1.4 2005/05/12 17:25:44 pjschwarz Exp $
 //
 // Copyright (c) 2005, by Exadius Labs.  All Rights Reserved.
 // Licensed under the the BSD License.
@@ -16,6 +16,6 @@ public class VertexChain
 {
     Point2D pt;
     Segment[] vnext = new Segment[4];			/* next vertices for the 4 chains */
-    Segment[] vpos = new Segment[4];			/* position of v in the 4 chains */
+    Monotone[] vpos = new Monotone[4];			/* position of v in the 4 chains */
     int nextfree;
 }

@@ -6,7 +6,7 @@
  *
  * --Last Modified--
  * User: $Author: pjschwarz $
- * When: $Date: 2005/04/01 16:20:08 $
+ * When: $Date: 2005/05/12 17:25:44 $
  *
  * Copyright (c) 2005, by Exadius Labs.  All Rights Reserved.
  * Licensed under the the BSD License.
@@ -22,7 +22,7 @@ import java.util.Set;
  * Monotonates Trapazoids.
  *
  * @author pschwarz
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Monotonator
 {
@@ -34,7 +34,6 @@ public class Monotonator
 
         List<VertexChain> vertexChains = new ArrayList<VertexChain>();
         visited = new HashSet<Trapezoid>();
-        List<MonotoneChain> monotoneChains = new ArrayList<MonotoneChain>();
         List<Monotone> monotones = new ArrayList<Monotone>();
 
         for (int i = 0; i < trapezoids.size(); i++)
@@ -57,22 +56,22 @@ public class Monotonator
             VertexChain vertexChain = new VertexChain();
             vertexChain.pt = segment.v0;
             vertexChain.vnext[0] = segment.next; /* next vertex */
-            vertexChain.vpos[0] = segment;	/* locn. of next vertex */
+            vertexChain.vpos[0] = monotone;	/* locn. of next vertex */
             vertexChain.nextfree = 1;
             vertexChains.add(vertexChain);
 
         }
 
         if (startingTrapezoid.u0 != null)
-            traversePolygon(0, startingTrapezoid, startingTrapezoid.u0, true);
+            traversePolygon(monotones.get(0), startingTrapezoid, startingTrapezoid.u0, true);
         else if (startingTrapezoid.d0 != null)
-            traversePolygon(0, startingTrapezoid, startingTrapezoid.d0, false);
+            traversePolygon(monotones.get(0), startingTrapezoid, startingTrapezoid.d0, false);
 
 
         return monotones;
     }
 
-    private void traversePolygon(int mcur, Trapezoid t, Trapezoid from, boolean fromUpper)
+    private void traversePolygon(Monotone mcur, Trapezoid t, Trapezoid from, boolean fromUpper)
     {
 
 
@@ -84,7 +83,6 @@ public class Monotonator
         visited.add(t);
 
 
-        boolean doSwitch = false;
         Segment v0 = null;
         Segment v1 = null;
         // We have much more information available here.
@@ -105,15 +103,13 @@ public class Monotonator
 
                 if (from == t.d1)
                 {
-                    doSwitch = true;
-
-                    int mnew = makeNewMonotonePolygon(mcur, v1, v0);
+                    Monotone mnew = makeNewMonotonePolygon(mcur, v1, v0);
                     traversePolygon(mcur, t.d1, t, true);
                     traversePolygon(mnew, t.d0, t, true);
                 }
                 else
                 {
-                    int mnew = makeNewMonotonePolygon(mcur, v0, v1);
+                    Monotone mnew = makeNewMonotonePolygon(mcur, v0, v1);
                     traversePolygon(mcur, t.d0, t, true);
                     traversePolygon(mnew, t.d1, t, true);
                 }
@@ -136,14 +132,13 @@ public class Monotonator
 
                 if(from == t.u1)
                 {
-                    doSwitch = true;
-                    int mnew = makeNewMonotonePolygon(mcur, v1, v0);
+                    Monotone mnew = makeNewMonotonePolygon(mcur, v1, v0);
                     traversePolygon(mcur, t.u1, t, false);
                     traversePolygon(mnew, t.u0, t, false);
                 }
                 else
                 {
-                    int mnew = makeNewMonotonePolygon(mcur, v0, v1);
+                    Monotone mnew = makeNewMonotonePolygon(mcur, v0, v1);
                     traversePolygon(mcur, t.u0, t, false);
                     traversePolygon(mnew, t.u1, t, false);
                 }
@@ -168,8 +163,7 @@ public class Monotonator
                 if((!fromUpper  && t.d1 == from)
                         || (fromUpper && t.u1 == from ))
                 {
-                    doSwitch = true;
-                    int mnew = makeNewMonotonePolygon(mcur, v1, v0);
+                    Monotone mnew = makeNewMonotonePolygon(mcur, v1, v0);
                     traversePolygon(mcur, t.u1, t, false);
                     traversePolygon(mcur, t.d1, t, true);
                     traversePolygon(mnew, t.u0, t, false);
@@ -177,7 +171,7 @@ public class Monotonator
                 }
                 else
                 {
-                    int mnew = makeNewMonotonePolygon(mcur, v0, v1);
+                    Monotone mnew = makeNewMonotonePolygon(mcur, v0, v1);
                     traversePolygon(mcur, t.u0, t, false);
                     traversePolygon(mcur, t.d0, t, true);
                     traversePolygon(mnew, t.u1, t, false);
@@ -194,8 +188,7 @@ public class Monotonator
                     // retval = SP_2UP_LEFT;
                     if(fromUpper && t.u0 == from)
                     {
-                        doSwitch = true;
-                        int mnew = makeNewMonotonePolygon(mcur, v1, v0);
+                        Monotone mnew = makeNewMonotonePolygon(mcur, v1, v0);
                         traversePolygon(mcur, t.u0, t, false);
                         traversePolygon(mnew, t.d0, t, true);
                         traversePolygon(mnew, t.u1, t, false);
@@ -203,7 +196,7 @@ public class Monotonator
                     }
                     else
                     {
-                        int mnew = makeNewMonotonePolygon(mcur, v0, v1);
+                        Monotone mnew = makeNewMonotonePolygon(mcur, v0, v1);
                         traversePolygon(mcur, t.u1, t, false);
                         traversePolygon(mcur, t.d0, t, true);
                         traversePolygon(mcur, t.d1, t, true);
@@ -217,8 +210,7 @@ public class Monotonator
                     // retval = SP_2UP_RIGHT;
 	                if(fromUpper && t.u1 == from)
                     {
-                        doSwitch = true;
-                        int mnew = makeNewMonotonePolygon(mcur, v1, v0);
+                        Monotone mnew = makeNewMonotonePolygon(mcur, v1, v0);
                         traversePolygon(mcur, t.u1, t, false);
                         traversePolygon(mnew, t.d1, t, true);
                         traversePolygon(mnew, t.d0, t, true);
@@ -226,7 +218,7 @@ public class Monotonator
                     }
                     else
                     {
-                        int mnew = makeNewMonotonePolygon(mcur, v0, v1);
+                        Monotone mnew = makeNewMonotonePolygon(mcur, v0, v1);
                         traversePolygon(mcur, t.u0, t, false);
                         traversePolygon(mcur, t.d0, t, true);
                         traversePolygon(mcur, t.d1, t, true);
@@ -247,8 +239,7 @@ public class Monotonator
                     // retval = SP_2DN_LEFT;
                     if(!(!fromUpper && t.d0 == from) )
                     {
-                        doSwitch = true;
-                        int mnew = makeNewMonotonePolygon(mcur, v1, v0);
+                        Monotone mnew = makeNewMonotonePolygon(mcur, v1, v0);
                         traversePolygon(mcur, t.u1, t, false);
                         traversePolygon(mcur, t.d1, t, true);
                         traversePolygon(mcur, t.u0, t, false);
@@ -256,7 +247,7 @@ public class Monotonator
                     }
                     else
                     {
-                        int mnew = makeNewMonotonePolygon(mcur, v0, v1);
+                        Monotone mnew = makeNewMonotonePolygon(mcur, v0, v1);
                         traversePolygon(mcur, t.d0, t, true);
                         traversePolygon(mnew, t.u0, t, false);
                         traversePolygon(mnew, t.u1, t, false);
@@ -271,8 +262,7 @@ public class Monotonator
 //                    retval = SP_2DN_RIGHT;
                     if(!fromUpper && t.d1 == from)
                     {
-                        doSwitch = true;
-                        int mnew = makeNewMonotonePolygon(mcur, v1, v0);
+                        Monotone mnew = makeNewMonotonePolygon(mcur, v1, v0);
                         traversePolygon(mcur, t.d1, t, true);
                         traversePolygon(mnew, t.u1, t, false);
                         traversePolygon(mnew, t.u0, t, false);
@@ -280,7 +270,7 @@ public class Monotonator
                     }
                     else
                     {
-                        int mnew = makeNewMonotonePolygon(mcur, v0, v1);
+                        Monotone mnew = makeNewMonotonePolygon(mcur, v0, v1);
                         traversePolygon(mcur, t.u0, t, false);
                         traversePolygon(mcur, t.d0, t, true);
                         traversePolygon(mcur, t.u1, t, false);
@@ -297,8 +287,7 @@ public class Monotonator
 //                    retval = SP_SIMPLE_LRDN;
                     if(fromUpper)
                     {
-                        doSwitch = true;
-                        int mnew = makeNewMonotonePolygon(mcur, v1, v0);
+                        Monotone mnew = makeNewMonotonePolygon(mcur, v1, v0);
                         traversePolygon(mcur, t.u0, t, false);
                         traversePolygon(mcur, t.u1, t, false);
                         traversePolygon(mnew, t.d1, t, true);
@@ -306,7 +295,7 @@ public class Monotonator
                     }
                     else
                     {
-                        int mnew = makeNewMonotonePolygon(mcur, v0, v1);
+                        Monotone mnew = makeNewMonotonePolygon(mcur, v0, v1);
                         traversePolygon(mcur, t.d1, t, true);
                         traversePolygon(mcur, t.d0, t, true);
                         traversePolygon(mnew, t.u0, t, false);
@@ -321,8 +310,7 @@ public class Monotonator
 
                     if(fromUpper)
                     {
-                        doSwitch = true;
-                        int mnew = makeNewMonotonePolygon(mcur, v1, v0);
+                        Monotone mnew = makeNewMonotonePolygon(mcur, v1, v0);
                         traversePolygon(mcur, t.u0, t, false);
                         traversePolygon(mcur, t.u1, t, false);
                         traversePolygon(mnew, t.d1, t, true);
@@ -330,7 +318,7 @@ public class Monotonator
                     }
                     else
                     {
-                        int mnew = makeNewMonotonePolygon(mcur, v0, v1);
+                        Monotone mnew = makeNewMonotonePolygon(mcur, v0, v1);
                         traversePolygon(mcur, t.d1, t, true);
                         traversePolygon(mcur, t.d0, t, true);
                         traversePolygon(mnew, t.u0, t, false);
@@ -350,15 +338,32 @@ public class Monotonator
     }
 
     /**
-     * TODO: The return might need to be changed to a Monotone.
+     * Constructs a new Monotone, using the current and the given Segments.
      * @param mcur
      * @param v0
      * @param v1
      * @return
      */
-    private int makeNewMonotonePolygon(int mcur, Segment v0, Segment v1)
+    private Monotone makeNewMonotonePolygon(Monotone mcur, Segment v0, Segment v1)
     {
-        return -1;
+        /*VertexChain vp0;
+        VertexChain vp1;
+
+        Monotone mp = vp0.vpos[0];
+        Monotone mq = vp1.vpos[0];
+
+        Monotone monotone1 = new Monotone();
+        Monotone monotone2 = new Monotone();
+        monotone1.vnum = v0;
+        monotone2.vnum = v1;
+
+
+
+        monotone1.prev = mp.next;
+        mp.next.prev = monotone1;
+        mon
+*/
+        return null;
     }
 
 
