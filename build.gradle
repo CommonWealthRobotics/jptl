@@ -1,0 +1,166 @@
+
+plugins {
+	id 'eclipse'
+	id 'java'
+	id 'maven-publish'
+	id 'signing'
+	id 'io.codearte.nexus-staging' version '0.30.0'
+}
+
+File buildDir = file(".");
+Properties props = new Properties()
+props.load(new FileInputStream(buildDir.getAbsolutePath()+"/src/main/resources/org/exadius/jptl/util/build.properties"))
+group = "com.neuronrobotics"
+archivesBaseName = "jptl"
+version = props."app.version"
+
+// BEGIN AI SLOP
+
+nexusStaging {
+    serverUrl = "https://oss.sonatype.org/service/local/"
+    username = System.getenv("MAVEN_USERNAME")
+    password = System.getenv("MAVEN_PASSWORD")
+    packageGroup = "com.neuronrobotics" // Replace with your actual package group
+}
+
+task closeAndReleaseSeparately {
+    dependsOn tasks.releaseRepository
+}
+
+tasks.releaseRepository.dependsOn tasks.closeRepository
+tasks.closeRepository.dependsOn tasks.getStagingProfile
+
+// Optional: Add this if you want to see more information during the execution
+tasks.getStagingProfile.logging.level = LogLevel.INFO
+tasks.closeRepository.logging.level = LogLevel.INFO
+tasks.releaseRepository.logging.level = LogLevel.INFO
+
+tasks.getStagingProfile.doFirst {
+    println "Executing getStagingProfile task"
+}
+
+tasks.closeRepository.doFirst {
+    println "Executing closeRepository task"
+}
+
+tasks.releaseRepository.doFirst {
+    println "Executing releaseRepository task"
+}
+
+// END AI SLOP
+sourceCompatibility = '1.8'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+//apply from: 'http://gradle-plugins.mihosoft.eu/latest/vlicenseheader.gradle'
+//repairHeaders.licenseHeaderText = new File(projectDir,'./license-template.txt')
+
+task sourcesJar(type: Jar) {
+	classifier = 'sources'
+	from sourceSets.main.allSource
+}
+
+
+repositories {
+    mavenCentral()
+	mavenLocal()
+}
+
+// javadoc is way too strict for my taste.
+if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+        tasks.withType(Javadoc) {
+            options.addStringOption("encoding", "UTF-8")
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
+    }
+}
+//home/hephaestus/.m2/repository/net/jsdia/jsdi_lib/4.5.0-SNAPSHOT/jsdi_lib-4.5.0-SNAPSHOT.pom
+//home/hephaestus/.m2/repository/net/jsdai/jsdai_lib/4.5.0-SNAPSHOT/jsdai_lib-4.5.0-SNAPSHOT.pom
+//home/hephaestus/.m2/repository/net/jsdia/jsdai_lib/4.5.0-SNAPSHOT/jsdai_lib-4.5.0-SNAPSHOT.pom
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+dependencies {
+    testImplementation group: 'junit', name: 'junit', version: '4.0'	
+}
+
+Date buildTimeAndDate = new Date()
+ext {
+    buildDate = new java.text.SimpleDateFormat('yyyy-MM-dd').format(buildTimeAndDate)
+    buildTime = new java.text.SimpleDateFormat('HH:mm:ss.SSSZ').format(buildTimeAndDate)
+}
+
+
+
+
+publishing {
+	
+		repositories {
+			maven {
+				name = "OSSRH"
+				url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+				credentials {
+					username = System.getenv("MAVEN_USERNAME")
+					password = System.getenv("MAVEN_PASSWORD")
+				}
+			}
+		}
+		publications {
+			mavenJava(MavenPublication) {
+				from components.java
+				pom {
+					name= 'jptl'
+					packaging ='jar'
+					// optionally artifactId can be defined here
+					description ='Java Polygon Triangulation Library.'
+					url= 'https://github.com/CommonWealthRobotics/jptl'
+	
+					scm {
+						connection 			='scm:git:https://github.com/CommonWealthRobotics/jptl'
+						developerConnection ='scm:git:https://github.com/CommonWealthRobotics/jptl'
+						url ='https://github.com/CommonWealthRobotics/jptl'
+					}
+	
+					licenses {
+						license {
+							name= 'The Apache License, Version 2.0'
+							url ='http://www.apache.org/licenses/LICENSE-2.0.txt'
+						}
+					}
+	
+					developers {
+						developer {
+							id ='madhephaestus'
+							name= 'Kevin Harrington'
+							email= 'mad.hephaestus@gmail.com'
+						}
+					}
+				}
+			}
+		}
+	}
+	java {
+		withJavadocJar()
+		withSourcesJar()
+	}
+	
+	signing {
+		sign publishing.publications.mavenJava
+	}
+	
+	
+	javadoc {
+		if(JavaVersion.current().isJava9Compatible()) {
+			options.addBooleanOption('html5', true)
+		}
+	}
