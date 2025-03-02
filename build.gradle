@@ -92,6 +92,7 @@ artifacts {
 
 dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.0'	
+	implementation fileTree(dir: 'lib', include: ['*.jar'])
 }
 
 Date buildTimeAndDate = new Date()
